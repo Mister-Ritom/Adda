@@ -5,6 +5,7 @@ import 'package:adda/pages/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rive/rive.dart';
@@ -39,8 +40,7 @@ class _SignInPageState extends State<SignInPage> {
       ));
       return false;
     }
-    //check if password is greater than 8 ana has a lowercase letter and a number
-    if (!RegExp(r"^(?=.*[a-z])(?=.*[0-9])[a-zA-Z0-9]{8,}$").hasMatch(password)) {
+    if (password.length<8) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
             "Password must be greater than 8 and contain a lowercase letter and a number"),
@@ -53,6 +53,10 @@ class _SignInPageState extends State<SignInPage> {
   void onSignIn()async {
     if (!isValid())return;
     final auth = FirebaseAuth.instance;
+    HapticFeedback.vibrate();
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text("Signing in..."),
+    ));
     if (page == 2) {
       try {
         final cred = await auth.createUserWithEmailAndPassword
@@ -141,7 +145,8 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<void> createUserDoc(UserCredential cred) async {
     // create user model from cred data
-    final user = UserModel(username: cred.user!.uid, name: cred.user!.displayName!, email: cred.user!.email!,
+    String noNullName = cred.user!.displayName==null? name : cred.user!.displayName!;
+    final user = UserModel(username: cred.user!.uid, name: noNullName, email: cred.user!.email!,
     uid: cred.user!.uid,photoUrl: cred.user!.photoURL);
     await createCaches(cred);
     return FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set(user.toJson());

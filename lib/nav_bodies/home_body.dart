@@ -762,10 +762,8 @@ class _HomeBodyState extends State<HomeBody> {
 
   @override
   Widget build(BuildContext context) {
-    if (_servers.isEmpty||channels.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(),
-      );
+    if (_servers.isEmpty) {
+      return const Spacer();
     }
     final currentServer = _servers[_currentServer];
     final cards = getCards();
@@ -778,7 +776,24 @@ class _HomeBodyState extends State<HomeBody> {
             buildServerSelector(context),
           ],
         ),
-        ChatBody(server: _servers[_currentServer], channelRef: channels[_currentChannel],)
+        //Check if channels is empty and show a button to create channels
+        if (channels.isEmpty)
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(FontAwesomeIcons.hashtag,size: 64,),
+                const SizedBox(height: 16,),
+                const Text("No channels found"),
+                const SizedBox(height: 16,),
+                ElevatedButton(
+                  onPressed: openCreateChannelDialog,
+                  child: const Text("Create Channel"),
+                ),
+              ],
+            ),
+          )
+        else ChatBody(server: _servers[_currentServer], channelRef: channels[_currentChannel],)
       ],
     );
   }
