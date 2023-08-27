@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "932994511784",
+    "project_id": "adda-ghor",
+    "storage_bucket": "adda-ghor.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:932994511784:android:cfcf116dd35df163bc239d",
+        "android_client_info": {
+          "package_name": "site.ritom.adda"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "932994511784-1ficru11qtngqvgrf293jacff943133m.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "site.ritom.adda",
+            "certificate_hash": "628f601e05df38911b03bf73a7dac097442620ba"
+          }
+        },
+        {
+          "client_id": "932994511784-4scs9e3veq1u0j8ooul6fl63njm1l518.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyALMAS4uzR9IPKhvtpEDpWQVBnzvzPrKas"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "932994511784-4scs9e3veq1u0j8ooul6fl63njm1l518.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "932994511784-tcbgved0cco7806jtq7n04gnqru6kij8.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "site.ritom.adda"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
