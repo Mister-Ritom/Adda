@@ -123,8 +123,11 @@ class _HomeBodyState extends State<HomeBody> {
         membersList.add(currentUser.uid);
         FirebaseFirestore.instance.collection('servers').doc(_joinId).update({
           'members': membersList,
-        }).then((value) {
+        }).then((_) {
           //If the server is joined successfully, show a success message
+          setState(() {
+            _servers.add(ServerModel.fromJson(serverData));
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("You have joined the server successfully"),
@@ -762,8 +765,8 @@ class _HomeBodyState extends State<HomeBody> {
 
   @override
   Widget build(BuildContext context) {
-    if (_servers.isEmpty) {
-      return const Spacer();
+    if (_servers.length<2) {
+      return buildServerSelector(context);
     }
     final currentServer = _servers[_currentServer];
     final cards = getCards();
@@ -800,11 +803,18 @@ class _HomeBodyState extends State<HomeBody> {
 
   void onState()async {
     final newServers = await getJoinedServers();
-    final newChannels = await getServerChannels(newServers[_currentServer]);
-    setState(() {
-      _servers = newServers;
-      channels = newChannels;
-    });
+    if (newServers.length>1) {
+      final newChannels = await getServerChannels(newServers[_currentServer]);
+      setState(() {
+        _servers = newServers;
+        channels = newChannels;
+      });
+    }
+    else {
+      setState(() {
+        _servers = newServers;
+      });
+    }
   }
 
   @override
