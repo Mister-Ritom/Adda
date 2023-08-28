@@ -39,8 +39,8 @@ jobs:
           channel: 'stable'
           architecture: x64
       - run: flutter pub get
-      - run: flutter build ipa --debug --no-codesign
+      - run: flutter build ipa --debug
       - uses: actions/upload-artifact@v2
         with:
           name: debug-ipa
-          path: build/ios/ipa/debug.ipa
+          path: build/ios/ipa/app-debug.ipa

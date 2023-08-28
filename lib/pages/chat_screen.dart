@@ -4,21 +4,20 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_profile_picture/flutter_profile_picture.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../models/user_model.dart';
 
-class ChatBody extends StatefulWidget {
+class ChatScreen extends StatefulWidget {
   final ServerModel server;
   final Map<String,dynamic> channelRef;
-  const ChatBody({super.key, required this.server, required this.channelRef});
+  const ChatScreen({super.key, required this.server, required this.channelRef});
 
   @override
-  State<ChatBody> createState() => _ChatBodyState();
+  State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatBodyState extends State<ChatBody> {
+class _ChatScreenState extends State<ChatScreen> {
 
   final TextEditingController _textEditingController = TextEditingController();
   final currentUser = FirebaseAuth.instance.currentUser;
@@ -121,73 +120,69 @@ class _ChatBodyState extends State<ChatBody> {
     );
   }
 
-  @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 45),
-          child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-            stream: getMessages(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                final messages = snapshot.data!.docs;
-                return ListView.builder(
-                  reverse: true,
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index].data();
-                    return FutureBuilder<Widget>(
-                      future: buildMessage(message),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData) {
-                          return snapshot.data!;
-                        } else {
-                          return const Spacer();
-                        }
-                      },
-                    );
-                  },
-                );
-              } else {
-                return const Spacer();
-              }
-            },
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("# ${widget.channelRef['name']}"),
+        toolbarHeight: 45,
+        elevation: 8,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.only(bottom: 45.0),
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: getMessages(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              final messages = snapshot.data!.docs;
+              return ListView.builder(
+                reverse: true,
+                itemCount: messages.length,
+                itemBuilder: (context, index) {
+                  final message = messages[index].data();
+                  return FutureBuilder<Widget>(
+                    future: buildMessage(message),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return snapshot.data!;
+                      } else {
+                        return const Spacer();
+                      }
+                    },
+                  );
+                },
+              );
+            } else {
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            }
+          },
         ),
-        SizedBox(
-          height: 45,
-          child: AppBar(
-            toolbarHeight: 45,
-            elevation: 8,
-            title: Text("# ${widget.channelRef['name']}"),
-          ),
-        ),
-        Align(
-            alignment: Alignment.bottomCenter,
-            child: Card(
-              margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-              child: TextField(
-                textAlign: TextAlign.start,
-                minLines: 1,
-                maxLines: 5,
-                controller: _textEditingController,
-                decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.all(8.0),
-                  border: InputBorder.none,
-                  hintText: 'Message #${_getHintText()}',
-                  prefixIcon: const Icon(FontAwesomeIcons.faceSmile),
-                  //change hint color to light grey
-                  hintStyle: TextStyle(color: Colors.grey.shade800),
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: _sendMessage,
-                  ),
-                ),
+      ),
+      bottomSheet: SizedBox(
+        width: MediaQuery.of(context).size.width*0.8,
+        height: 45,
+        child: Card(
+          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+          child: TextField(
+            textAlign: TextAlign.start,
+            minLines: 1,
+            maxLines: 5,
+            controller: _textEditingController,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.all(8.0),
+              border: InputBorder.none,
+              hintText: 'Message #${_getHintText()}',
+              //change hint color to light grey
+              hintStyle: TextStyle(color: Colors.grey.shade800,fontSize: 12),
+              suffixIcon: IconButton(
+                icon: const Icon(Icons.send),
+                onPressed: _sendMessage,
               ),
-            )
+            ),
+          ),
         ),
-      ],
+      ),
     );
   }
 }

@@ -1,4 +1,4 @@
-import 'package:adda/nav_bodies/chat_body.dart';
+import 'package:adda/pages/chat_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -19,9 +19,7 @@ class HomeBody extends StatefulWidget {
 
 class _HomeBodyState extends State<HomeBody> {
   int _currentServer = 1;
-  int _currentChannel = 0;
   String _joinId = "";
-  final pageController = PageController();
   List<ServerModel> _servers = [];
   List<Map<String, dynamic>> channels = [];
 
@@ -442,7 +440,7 @@ class _HomeBodyState extends State<HomeBody> {
                                       padding: const EdgeInsets.symmetric(
                                           horizontal: 4.0, vertical: 16.0),
                                       child: SelectableText(
-                                        "Invite link ${server.id}",
+                                        'Invite link ${server.id}',
                                         style: Theme.of(context)
                                             .textTheme
                                             .bodySmall,
@@ -707,12 +705,9 @@ class _HomeBodyState extends State<HomeBody> {
                 contentPadding:
                     const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                 onTap: () {
-                  setState(() {
-                    _currentChannel = index;
-                  });
-                  pageController.animateToPage(1,
-                      duration: const Duration(milliseconds: 500),
-                      curve: Curves.easeIn);
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => ChatScreen(channelRef: channel, server: currentServer,)
+                  ));
                 },
                 leading: const Icon(
                   FontAwesomeIcons.hashtag,
@@ -818,9 +813,9 @@ class _HomeBodyState extends State<HomeBody> {
       child: Center(
         child: ListTile(
           leading: const Icon(FontAwesomeIcons.userGroup),
-          title: Text("${currentServer.members.length} members"),
+          title: Text('${currentServer.members.length} members'),
           subtitle: Text(
-              "${currentServer.name} has ${currentServer.members.length} members including you"),
+              '${currentServer.name} has ${currentServer.members.length} members including you'),
         ),
       ),
     ));
@@ -835,46 +830,46 @@ class _HomeBodyState extends State<HomeBody> {
     }
     final currentServer = _servers[_currentServer];
     final cards = getCards();
-    return PageView(
-      controller: pageController,
+    return Stack(
       children: [
-        Stack(
-          children: [
-            buildFirstPage(currentServer, cards, context),
-            buildServerSelector(context),
-          ],
-        ),
-        //Check if channels is empty and show a button to create channels
-        if (channels.isEmpty)
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  FontAwesomeIcons.hashtag,
-                  size: 64,
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                const Text("No channels found"),
-                const SizedBox(
-                  height: 16,
-                ),
-                ElevatedButton(
-                  onPressed: openCreateChannelDialog,
-                  child: const Text("Create Channel"),
-                ),
-              ],
-            ),
-          )
-        else
-          ChatBody(
-            server: _servers[_currentServer],
-            channelRef: channels[_currentChannel],
-          )
+        buildFirstPage(currentServer, cards, context),
+        buildServerSelector(context),
       ],
     );
+    // return PageView(
+    //   controller: pageController,
+    //   children: [
+    //     //Check if channels is empty and show a button to create channels
+    //     if (channels.isEmpty)
+    //       Center(
+    //         child: Column(
+    //           mainAxisAlignment: MainAxisAlignment.center,
+    //           children: [
+    //             const Icon(
+    //               FontAwesomeIcons.hashtag,
+    //               size: 64,
+    //             ),
+    //             const SizedBox(
+    //               height: 16,
+    //             ),
+    //             const Text('No channels found'),
+    //             const SizedBox(
+    //               height: 16,
+    //             ),
+    //             ElevatedButton(
+    //               onPressed: openCreateChannelDialog,
+    //               child: const Text('Create Channel'),
+    //             ),
+    //           ],
+    //         ),
+    //       )
+    //     else
+    //       ChatBody(
+    //         server: _servers[_currentServer],
+    //         channelRef: channels[_currentChannel],
+    //       )
+    //   ],
+    // );
   }
 
   void onState() async {
@@ -896,11 +891,5 @@ class _HomeBodyState extends State<HomeBody> {
   void initState() {
     super.initState();
     onState();
-  }
-
-  @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
   }
 }
