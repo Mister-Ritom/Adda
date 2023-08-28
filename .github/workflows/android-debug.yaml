@@ -10,7 +10,7 @@ on:
     # on: push    # Default will run for every branch.
 
 jobs:
-  build:
+  androidbuild:
     # This job will run on ubuntu virtual machine
     runs-on: ubuntu-latest
     steps:
@@ -30,3 +30,17 @@ jobs:
         with:
           name: release-apk
           path: build/app/outputs/flutter-apk/app-debug.apk
+  iosbuild:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          architecture: x64
+      - run: flutter pub get
+      - run: flutter build ipa --debug --no-codesign
+      - uses: actions/upload-artifact@v2
+        with:
+          name: debug-ipa
+          path: build/ios/ipa/debug.ipa
