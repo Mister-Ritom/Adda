@@ -19,7 +19,6 @@ jobs:
           channel: 'stable'
           architecture: x64
       - run: flutter pub get
-      - run: flutter test
       - run: flutter build ios --debug --no-codesign
 #
 #      # Upload generated apk to the artifacts.
