@@ -21,9 +21,9 @@ class SignInPage extends StatefulWidget {
 }
 
 class _SignInPageState extends State<SignInPage> {
-  var page = 1;//1 for sign in and 2 for sign up
+  var page = 1; //1 for sign in and 2 for sign up
   late Widget currentPage = signInWidget(context);
-  String emailId = "", password = "",name="";
+  String emailId = "", password = "", name = "";
 
   bool isValid() {
     //Check if email and password is valid
@@ -40,7 +40,7 @@ class _SignInPageState extends State<SignInPage> {
       ));
       return false;
     }
-    if (password.length<8) {
+    if (password.length < 8) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
         content: Text(
             "Password must be greater than 8 and contain a lowercase letter and a number"),
@@ -50,8 +50,8 @@ class _SignInPageState extends State<SignInPage> {
     return true;
   }
 
-  void onSignIn()async {
-    if (!isValid())return;
+  void onSignIn() async {
+    if (!isValid()) return;
     final auth = FirebaseAuth.instance;
     HapticFeedback.vibrate();
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -59,23 +59,21 @@ class _SignInPageState extends State<SignInPage> {
     ));
     if (page == 2) {
       try {
-        final cred = await auth.createUserWithEmailAndPassword
-          (email: emailId, password: password);
+        final cred = await auth.createUserWithEmailAndPassword(
+            email: emailId, password: password);
         await cred.user!.sendEmailVerification();
         await createUserDoc(cred);
         if (context.mounted) {
           Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context) => const HomePage()));
         }
-      }
-      on FirebaseAuthException catch (e,stack) {
+      } on FirebaseAuthException catch (e, stack) {
         String error = "Something went wrong. Please try again later.";
         if (e.code == 'weak-password') {
           error = 'The password provided is too weak.';
         } else if (e.code == 'email-already-in-use') {
           error = 'The account already exists for that email.';
-        }
-        else {
+        } else {
           FirebaseCrashlytics.instance.recordError(e, stack);
         }
         if (context.mounted) {
@@ -83,8 +81,7 @@ class _SignInPageState extends State<SignInPage> {
             content: Text(error),
           ));
         }
-      }
-      catch(error,stack) {
+      } catch (error, stack) {
         FirebaseCrashlytics.instance.recordError(error, stack);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -92,23 +89,22 @@ class _SignInPageState extends State<SignInPage> {
           ));
         }
       }
-
     } else {
       //sign in the user with email and password
       try {
-        await auth.signInWithEmailAndPassword(email: emailId, password: password);
+        await auth.signInWithEmailAndPassword(
+            email: emailId, password: password);
         if (context.mounted) {
-          Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context)=>const HomePage()));
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const HomePage()));
         }
-      }
-      on FirebaseAuthException catch (e,stack) {
+      } on FirebaseAuthException catch (e, stack) {
         String error = "Something went wrong. Please try again later.";
         if (e.code == 'user-not-found') {
           error = 'No user found for that email.';
         } else if (e.code == 'wrong-password') {
           error = 'Wrong password provided for that user.';
-        }
-        else {
+        } else {
           FirebaseCrashlytics.instance.recordError(e, stack);
         }
         if (context.mounted) {
@@ -116,8 +112,7 @@ class _SignInPageState extends State<SignInPage> {
             content: Text(error),
           ));
         }
-      }
-      catch (error,stack) {
+      } catch (error, stack) {
         FirebaseCrashlytics.instance.recordError(error, stack);
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -128,12 +123,11 @@ class _SignInPageState extends State<SignInPage> {
     }
   }
 
-  void googleSignIn()async {
+  void googleSignIn() async {
     //Sign in with await google and check for errors
     try {
       await signInWithGoogle();
-    }
-    catch (error,stack) {
+    } catch (error, stack) {
       FirebaseCrashlytics.instance.recordError(error, stack);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -145,11 +139,19 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<void> createUserDoc(UserCredential cred) async {
     // create user model from cred data
-    String noNullName = cred.user!.displayName==null? name : cred.user!.displayName!;
-    final user = UserModel(username: cred.user!.uid, name: noNullName, email: cred.user!.email!,
-    uid: cred.user!.uid,photoUrl: cred.user!.photoURL);
+    String noNullName =
+        cred.user!.displayName == null ? name : cred.user!.displayName!;
+    final user = UserModel(
+        username: cred.user!.uid,
+        name: noNullName,
+        email: cred.user!.email!,
+        uid: cred.user!.uid,
+        photoUrl: cred.user!.photoURL);
     await createCaches(cred);
-    return FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).set(user.toJson());
+    return FirebaseFirestore.instance
+        .collection('users')
+        .doc(cred.user!.uid)
+        .set(user.toJson());
   }
 
   Future<void> createCaches(UserCredential cred) async {
@@ -157,7 +159,8 @@ class _SignInPageState extends State<SignInPage> {
     final viewsAchievement = Achievement(
       title: "Views",
       description: "Got {views} views on profile",
-      icon: FontAwesomeIcons.eye,
+      icon:
+          "https://img.icons8.com/material-outlined/24/visible--v1.png", //From Icons8
       colors: [
         Colors.pinkAccent.shade400,
         Colors.white,
@@ -166,7 +169,7 @@ class _SignInPageState extends State<SignInPage> {
     final messagesAchievement = Achievement(
       title: "Messages",
       description: "Sent {messageCount} messages",
-      icon: FontAwesomeIcons.comment,
+      icon: "https://img.icons8.com/ios/50/speech-bubble--v1.png", //From Icons8
       colors: [
         Colors.pinkAccent.shade400,
         Colors.white,
@@ -175,7 +178,7 @@ class _SignInPageState extends State<SignInPage> {
     final accountCreationAchievement = Achievement(
       title: "Account Creation",
       description: "Created account on {creationDate}",
-      icon: FontAwesomeIcons.user,
+      icon: "https://img.icons8.com/material-outlined/24/user--v1.png",
       colors: [
         Colors.pinkAccent.shade400,
         Colors.white,
@@ -186,9 +189,9 @@ class _SignInPageState extends State<SignInPage> {
     achievements.add(accountCreationAchievement);
     final firestore = FirebaseFirestore.instance;
     return firestore.collection("userCache").doc(cred.user?.uid).set({
-      "achievements":achievements.map((e) => e.toJson()).toList(),
-      "views":0,
-      "messageCount":0,
+      "achievements": achievements.map((e) => e.toJson()).toList(),
+      "views": 0,
+      "messageCount": 0,
     });
   }
 
@@ -197,7 +200,8 @@ class _SignInPageState extends State<SignInPage> {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
     // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth = await googleUser?.authentication;
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
 
     // Create a new credential
     final credential = GoogleAuthProvider.credential(
@@ -207,7 +211,10 @@ class _SignInPageState extends State<SignInPage> {
     // Once signed in, return the UserCredential
     final cred = await FirebaseAuth.instance.signInWithCredential(credential);
     //check if user id already exists in firestore
-    final userDoc = await FirebaseFirestore.instance.collection('users').doc(cred.user!.uid).get();
+    final userDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(cred.user!.uid)
+        .get();
     if (!userDoc.exists) {
       await createUserDoc(cred);
     }
@@ -219,7 +226,7 @@ class _SignInPageState extends State<SignInPage> {
 
   void togglePage(BuildContext context) {
     setState(() {
-      if (page==1) {
+      if (page == 1) {
         page = 2;
         currentPage = signUpWidget(context);
       } else {
@@ -264,8 +271,8 @@ class _SignInPageState extends State<SignInPage> {
                 child: Text(
                   "Meet your friends around the world.",
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Colors.grey.shade400,
-                  ),
+                        color: Colors.grey.shade400,
+                      ),
                 ),
               ),
               //Animated switcher with sing in and sign up. with rotation transition
@@ -295,31 +302,31 @@ class _SignInPageState extends State<SignInPage> {
                         onPressed: onSignIn,
                         child: RichText(
                             text: TextSpan(children: [
-                              TextSpan(
-                                // Check page for sign up or sign in
-                                text: page == 2
-                                    ? "Sign up with email"
-                                    : "Sign in with email",
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge!
-                                    .copyWith(
+                          TextSpan(
+                            // Check page for sign up or sign in
+                            text: page == 2
+                                ? "Sign up with email"
+                                : "Sign in with email",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
                                     color: Theme.of(context)
                                         .colorScheme
                                         .inverseSurface),
-                              ),
-                              //Widget span with a sized box of width 10
-                              const WidgetSpan(
-                                  child: SizedBox(
-                                    width: 10,
-                                  )),
-                              WidgetSpan(
-                                  child: Icon(
-                                    FontAwesomeIcons.rightToBracket,
-                                    size: 20,
-                                    color: Theme.of(context).colorScheme.inverseSurface,
-                                  )),
-                            ])),
+                          ),
+                          //Widget span with a sized box of width 10
+                          const WidgetSpan(
+                              child: SizedBox(
+                            width: 10,
+                          )),
+                          WidgetSpan(
+                              child: Icon(
+                            FontAwesomeIcons.rightToBracket,
+                            size: 20,
+                            color: Theme.of(context).colorScheme.inverseSurface,
+                          )),
+                        ])),
                       ),
                     ),
                   ),
@@ -329,12 +336,10 @@ class _SignInPageState extends State<SignInPage> {
                 padding: const EdgeInsets.only(top: 16),
                 child: Text(
                   // if page is 2 show not a user of adda else show already a user of adda
-                  page == 2
-                      ? "Already a user of Adda?"
-                      : "Not a user of Adda?",
+                  page == 2 ? "Already a user of Adda?" : "Not a user of Adda?",
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                    color: Colors.grey.shade400,
-                  ),
+                        color: Colors.grey.shade400,
+                      ),
                 ),
               ),
 
@@ -344,18 +349,14 @@ class _SignInPageState extends State<SignInPage> {
                   width: MediaQuery.of(context).size.width - 130,
                   height: 40,
                   child: TextButton(
-                    onPressed:()=> {
-                      togglePage(context)
-                    },
+                    onPressed: () => {togglePage(context)},
                     child: Text(
-                      //If page is 2 show create account or show login
-                      page == 2 ? "Login" : "Create Account",
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .copyWith(
-                          color: Colors.blueAccent.shade400)
-                    ),
+                        //If page is 2 show create account or show login
+                        page == 2 ? "Login" : "Create Account",
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyLarge!
+                            .copyWith(color: Colors.blueAccent.shade400)),
                   ),
                 ),
               ),
@@ -377,7 +378,7 @@ class _SignInPageState extends State<SignInPage> {
       child: Container(
         padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
         height: 360,
-        width: MediaQuery.of(context).size.width-16,
+        width: MediaQuery.of(context).size.width - 16,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
@@ -397,8 +398,7 @@ class _SignInPageState extends State<SignInPage> {
             decoration: const InputDecoration(
                 prefixIcon: Icon(FontAwesomeIcons.signature),
                 border: OutlineInputBorder(
-                  borderRadius:
-                  BorderRadius.all(Radius.circular(16.0)),
+                  borderRadius: BorderRadius.all(Radius.circular(16.0)),
                 ),
                 label: Text("Full name"),
                 hintText: "First and last name"),
@@ -416,14 +416,13 @@ class _SignInPageState extends State<SignInPage> {
             child: Text(
               "OR Sign up with",
               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Colors.grey.shade400,
-              ),
+                    color: Colors.grey.shade400,
+                  ),
             ),
           ),
           // A row with three icon buttons
           providerRow(),
-        ]
-        ),
+        ]),
       ),
     );
   }
@@ -433,7 +432,7 @@ class _SignInPageState extends State<SignInPage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         IconButton(
-          onPressed:googleSignIn,
+          onPressed: googleSignIn,
           icon: const Icon(FontAwesomeIcons.google),
         ),
         IconButton(
@@ -447,6 +446,7 @@ class _SignInPageState extends State<SignInPage> {
       ],
     );
   }
+
   Card signInWidget(BuildContext context) {
     return Card(
       key: const ValueKey<int>(1),
@@ -458,7 +458,7 @@ class _SignInPageState extends State<SignInPage> {
       child: Container(
         padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
         height: 360,
-        width: MediaQuery.of(context).size.width-16,
+        width: MediaQuery.of(context).size.width - 16,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
@@ -474,8 +474,8 @@ class _SignInPageState extends State<SignInPage> {
             child: Text(
               "OR Sign in with",
               style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                color: Colors.grey.shade400,
-              ),
+                    color: Colors.grey.shade400,
+                  ),
             ),
           ),
           // A row with three icon buttons
@@ -483,8 +483,7 @@ class _SignInPageState extends State<SignInPage> {
             padding: const EdgeInsets.only(top: 70),
             child: providerRow(),
           ),
-        ]
-        ),
+        ]),
       ),
     );
   }
@@ -503,8 +502,7 @@ class _SignInPageState extends State<SignInPage> {
       decoration: const InputDecoration(
           prefixIcon: Icon(FontAwesomeIcons.envelope),
           border: OutlineInputBorder(
-            borderRadius:
-            BorderRadius.all(Radius.circular(16.0)),
+            borderRadius: BorderRadius.all(Radius.circular(16.0)),
           ),
           label: Text("Email"),
           hintText: "Your email id"),
@@ -527,8 +525,7 @@ class _SignInPageState extends State<SignInPage> {
       decoration: const InputDecoration(
           prefixIcon: Icon(FontAwesomeIcons.lock),
           border: OutlineInputBorder(
-            borderRadius:
-            BorderRadius.all(Radius.circular(16.0)),
+            borderRadius: BorderRadius.all(Radius.circular(16.0)),
           ),
           label: Text("Password"),
           hintText: "Password"),

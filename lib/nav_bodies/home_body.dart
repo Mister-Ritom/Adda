@@ -23,18 +23,17 @@ class _HomeBodyState extends State<HomeBody> {
   String _joinId = "";
   final pageController = PageController();
   List<ServerModel> _servers = [];
-  List<Map<String,dynamic>> channels = [];
+  List<Map<String, dynamic>> channels = [];
 
   Future<UserModel> getServerOwner(String ownerId) async {
-    final DocumentSnapshot snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(ownerId)
-        .get();
+    final DocumentSnapshot snapshot =
+        await FirebaseFirestore.instance.collection('users').doc(ownerId).get();
 
-    return UserModel.fromJson(snapshot.data() as Map<String,dynamic>);
+    return UserModel.fromJson(snapshot.data() as Map<String, dynamic>);
   }
-  
-  Future<List<DocumentSnapshot>> getServersWithCurrentUserMember(String currentUserID) async {
+
+  Future<List<DocumentSnapshot>> getServersWithCurrentUserMember(
+      String currentUserID) async {
     final QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('servers')
         .where('members', arrayContains: currentUserID)
@@ -48,15 +47,18 @@ class _HomeBodyState extends State<HomeBody> {
     servers.add(ServerModel(
       id: 'add_server',
       name: "Add Ghor",
-      ownerId: '', description: '', image: '',
+      ownerId: '',
+      description: '',
+      image: '',
     ));
 
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser!=null) {
+    if (currentUser != null) {
       // Get servers and add them to list
-      final serversList = await getServersWithCurrentUserMember(currentUser.uid);
+      final serversList =
+          await getServersWithCurrentUserMember(currentUser.uid);
       for (final server in serversList) {
-        final serverData = server.data() as Map<String,dynamic>;
+        final serverData = server.data() as Map<String, dynamic>;
         servers.add(ServerModel.fromJson(serverData));
       }
     }
@@ -66,28 +68,32 @@ class _HomeBodyState extends State<HomeBody> {
 
   String _searchText = "";
 
-  Future<List<Map<String,dynamic>>> getServerChannels(server) async {
+  Future<List<Map<String, dynamic>>> getServerChannels(server) async {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser!=null) {
+    if (currentUser != null) {
       try {
-        final channelCollection= FirebaseFirestore.instance.collection("serverData")
-            .doc(server.id).collection("channels");
+        final channelCollection = FirebaseFirestore.instance
+            .collection("serverData")
+            .doc(server.id)
+            .collection("channels");
         //check if searching and add a query with start and end
         if (_searchText.isNotEmpty) {
-          final channelList = await channelCollection.startAt([_searchText])
-              .endAt(["$_searchText\uf8ff"]).orderBy("name").get();
+          final channelList = await channelCollection
+              .startAt([_searchText])
+              .endAt(["$_searchText\uf8ff"])
+              .orderBy("name")
+              .get();
           return channelList.docs.map((e) => e.data()).toList();
         }
         final channelList = await channelCollection.get();
         return channelList.docs.map((e) => e.data()).toList();
-      }
-      catch(_) {
+      } catch (_) {
         return [];
       }
     }
     return [];
   }
-  
+
   String getTimestamp(int creationTime) {
     final time = DateTime.fromMillisecondsSinceEpoch(creationTime);
     return "${time.day}/${time.month}/${time.year}";
@@ -95,7 +101,7 @@ class _HomeBodyState extends State<HomeBody> {
 
   void joinServer(BuildContext dialogContext) {
     final currentUser = FirebaseAuth.instance.currentUser;
-    if (currentUser==null) {
+    if (currentUser == null) {
       //If the user is not logged in, show an error
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -106,9 +112,13 @@ class _HomeBodyState extends State<HomeBody> {
       return;
     }
     //Join a server with the given id
-    FirebaseFirestore.instance.collection('servers').doc(_joinId).get().then((value) {
-      if(value.exists) {
-        final serverData = value.data() as Map<String,dynamic>;
+    FirebaseFirestore.instance
+        .collection('servers')
+        .doc(_joinId)
+        .get()
+        .then((value) {
+      if (value.exists) {
+        final serverData = value.data() as Map<String, dynamic>;
         final membersList = serverData['members'] as List<dynamic>;
         if (membersList.contains(currentUser.uid)) {
           //If the user is already a member of the server, show an error
@@ -136,8 +146,7 @@ class _HomeBodyState extends State<HomeBody> {
           );
           Navigator.pop(dialogContext);
         });
-      }
-      else {
+      } else {
         //If the server doesn't exist, show an error
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -156,7 +165,8 @@ class _HomeBodyState extends State<HomeBody> {
       builder: (context) {
         return Dialog(
           insetPadding: const EdgeInsets.all(16.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           child: Padding(
             padding: const EdgeInsets.all(32.0),
             child: Column(
@@ -165,13 +175,17 @@ class _HomeBodyState extends State<HomeBody> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: ListTile(
-                    leading: const Icon(Icons.home_outlined,size: 32,),
-                    title: Text("Join Ghor",
+                    leading: const Icon(
+                      Icons.home_outlined,
+                      size: 32,
+                    ),
+                    title: Text(
+                      "Join Ghor",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     subtitle: Text(
                       "Join your friends Ghor",
-                      style:Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
                 ),
@@ -204,8 +218,8 @@ class _HomeBodyState extends State<HomeBody> {
 
   void openCreateServerDialog() {
     //Navigate to server creation page
-    Navigator.of(context).push(MaterialPageRoute(builder: (context) =>
-    const ServerCreationPage()));
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => const ServerCreationPage()));
   }
 
   void openAddServerDialog() {
@@ -215,7 +229,8 @@ class _HomeBodyState extends State<HomeBody> {
       builder: (context) {
         return Dialog(
           insetPadding: const EdgeInsets.all(16.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           child: Padding(
             padding: const EdgeInsets.all(32.0),
             child: Column(
@@ -224,14 +239,14 @@ class _HomeBodyState extends State<HomeBody> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: ListTile(
-                    title: Text("Add Ghor",
-                        style: Theme.of(context).textTheme.headlineMedium,
-                      ),
-                    subtitle: Text(
-                        "Join or create a server to start chatting with your friends",
-                        style:Theme.of(context).textTheme.bodySmall,
+                    title: Text(
+                      "Add Ghor",
+                      style: Theme.of(context).textTheme.headlineMedium,
                     ),
-
+                    subtitle: Text(
+                      "Join or create a server to start chatting with your friends",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
                 ),
                 Card(
@@ -249,7 +264,8 @@ class _HomeBodyState extends State<HomeBody> {
                   child: ListTile(
                     leading: const Icon(Icons.create),
                     title: const Text('Create Server'),
-                    subtitle: const Text("Create a new server and invite your friends"),
+                    subtitle: const Text(
+                        "Create a new server and invite your friends"),
                     onTap: () {
                       Navigator.pop(context);
                       openCreateServerDialog();
@@ -271,7 +287,8 @@ class _HomeBodyState extends State<HomeBody> {
       builder: (context) {
         return Dialog(
           insetPadding: const EdgeInsets.all(16.0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           child: Padding(
             padding: const EdgeInsets.all(32.0),
             child: Column(
@@ -280,13 +297,17 @@ class _HomeBodyState extends State<HomeBody> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: ListTile(
-                    leading: const Icon(Icons.home_outlined,size: 32,),
-                    title: Text("Create Channel",
+                    leading: const Icon(
+                      Icons.home_outlined,
+                      size: 32,
+                    ),
+                    title: Text(
+                      "Create Channel",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                     subtitle: Text(
                       "Create a new channel in ${_servers[_currentServer].name}",
-                      style:Theme.of(context).textTheme.bodySmall,
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
                 ),
@@ -307,7 +328,8 @@ class _HomeBodyState extends State<HomeBody> {
                       //check if channel already exists and show the error to user
                       //TODO needs to rewriting
                       for (final channel in channels) {
-                        if (channel['name'].toLowerCase()==channelName.toLowerCase()) {
+                        if (channel['name'].toLowerCase() ==
+                            channelName.toLowerCase()) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Channel already exists"),
@@ -320,8 +342,10 @@ class _HomeBodyState extends State<HomeBody> {
                       Navigator.pop(context);
                       //Create channel in firestore
                       final server = _servers[_currentServer];
-                      final channelCollection = FirebaseFirestore.instance.collection("serverData")
-                          .doc(server.id).collection("channels");
+                      final channelCollection = FirebaseFirestore.instance
+                          .collection("serverData")
+                          .doc(server.id)
+                          .collection("channels");
                       final data = {
                         'name': channelName,
                         'timestamp': DateTime.now().millisecondsSinceEpoch,
@@ -347,7 +371,6 @@ class _HomeBodyState extends State<HomeBody> {
       },
     );
   }
-  
 
   void openBottomDialog() {
     //Open a modal bottom dialog for showing user their options
@@ -358,7 +381,8 @@ class _HomeBodyState extends State<HomeBody> {
           children: [
             buildServerInfo(),
             //show create channel only if the current user is the owner
-            if (_servers[_currentServer].ownerId==FirebaseAuth.instance.currentUser!.uid)
+            if (_servers[_currentServer].ownerId ==
+                FirebaseAuth.instance.currentUser!.uid)
               ListTile(
                 leading: const Icon(Icons.add),
                 title: const Text('Create Channel'),
@@ -383,7 +407,8 @@ class _HomeBodyState extends State<HomeBody> {
                   builder: (context) {
                     return Dialog(
                       insetPadding: const EdgeInsets.all(16.0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12.0)),
                       child: Padding(
                         padding: const EdgeInsets.all(32.0),
                         child: Column(
@@ -392,13 +417,19 @@ class _HomeBodyState extends State<HomeBody> {
                             Padding(
                               padding: const EdgeInsets.only(bottom: 16),
                               child: ListTile(
-                                leading: const Icon(Icons.home_outlined,size: 32,),
-                                title: Text("Invite Friends",
-                                  style: Theme.of(context).textTheme.headlineMedium,
+                                leading: const Icon(
+                                  Icons.home_outlined,
+                                  size: 32,
+                                ),
+                                title: Text(
+                                  "Invite Friends",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .headlineMedium,
                                 ),
                                 subtitle: Text(
                                   "Invite your friends to ${server.name}",
-                                  style:Theme.of(context).textTheme.bodySmall,
+                                  style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ),
                             ),
@@ -409,23 +440,25 @@ class _HomeBodyState extends State<HomeBody> {
                                   child: Card(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 4.0,
-                                        vertical: 16.0
-                                      ),
+                                          horizontal: 4.0, vertical: 16.0),
                                       child: SelectableText(
                                         "Invite link ${server.id}",
-                                        style: Theme.of(context).textTheme.bodySmall,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall,
                                       ),
                                     ),
                                   ),
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    Clipboard.setData(ClipboardData(text: server.id));
+                                    Clipboard.setData(
+                                        ClipboardData(text: server.id));
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       const SnackBar(
-                                        content: Text("Invite link copied to clipboard"),
+                                        content: Text(
+                                            "Invite link copied to clipboard"),
                                         duration: Duration(seconds: 2),
                                       ),
                                     );
@@ -485,30 +518,38 @@ class _HomeBodyState extends State<HomeBody> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                Row(
-                  children: [
-                    const Icon(FontAwesomeIcons.hashtag,size: 12,),
-                    const SizedBox(width: 8,),
-                    Text("${channels.length} Channels",
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ]
-                ),
+                Row(children: [
+                  const Icon(
+                    FontAwesomeIcons.hashtag,
+                    size: 12,
+                  ),
+                  const SizedBox(
+                    width: 8,
+                  ),
+                  Text(
+                    "${channels.length} Channels",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ]),
                 //A row for showing members count
-                Row(
-                  children : [
-                    const Icon(FontAwesomeIcons.userGroup,size: 12,),
-                    const SizedBox(width: 8,),
-                    Text("${_servers[_currentServer].members.length} Members",
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ]
-                ),
+                Row(children: [
+                  const Icon(
+                    FontAwesomeIcons.userGroup,
+                    size: 12,
+                  ),
+                  const SizedBox(
+                    width: 8,
+                  ),
+                  Text(
+                    "${_servers[_currentServer].members.length} Members",
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ]),
               ],
             ),
             //show a created by and created on
             SizedBox(
-              width: MediaQuery.of(context).size.width*0.8,
+              width: MediaQuery.of(context).size.width * 0.8,
               child: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: FutureBuilder<UserModel>(
@@ -519,21 +560,29 @@ class _HomeBodyState extends State<HomeBody> {
                       return ListTile(
                         trailing: ProfilePicture(
                           img: owner.photoUrl,
-                          radius: 14, name: owner.name, fontsize: 10,
+                          radius: 14,
+                          name: owner.name,
+                          fontsize: 10,
                         ),
-                        title: Text("Created by ${owner.name}",
-                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: Colors.grey,
-                          ),
+                        title: Text(
+                          "Created by ${owner.name}",
+                          style:
+                              Theme.of(context).textTheme.bodySmall!.copyWith(
+                                    color: Colors.grey,
+                                  ),
                         ),
-                        subtitle: Text("On ${getTimestamp(_servers[_currentServer].creationTime)}",
-                          style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            color: Colors.grey,
-                          ),
+                        subtitle: Text(
+                          "On ${getTimestamp(_servers[_currentServer].creationTime)}",
+                          style:
+                              Theme.of(context).textTheme.bodySmall!.copyWith(
+                                    color: Colors.grey,
+                                  ),
                         ),
                       );
                     }
-                    return const SizedBox(height: 10,);
+                    return const SizedBox(
+                      height: 10,
+                    );
                   },
                 ),
               ),
@@ -544,7 +593,7 @@ class _HomeBodyState extends State<HomeBody> {
     );
   }
 
-  Widget buildServerWidget(ServerModel server,int index) {
+  Widget buildServerWidget(ServerModel server, int index) {
     bool isSelected = _currentServer == index;
     return SizedBox(
       height: 60,
@@ -554,12 +603,14 @@ class _HomeBodyState extends State<HomeBody> {
             child: FittedBox(
               child: Material(
                 //Circle shape with red border
-                shape: isSelected? CircleBorder(
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2.0,
-                  ),
-                ):const CircleBorder(),
+                shape: isSelected
+                    ? CircleBorder(
+                        side: BorderSide(
+                          color: Theme.of(context).colorScheme.primary,
+                          width: 2.0,
+                        ),
+                      )
+                    : const CircleBorder(),
                 child: InkWell(
                   onTap: () {
                     setState(() {
@@ -580,8 +631,8 @@ class _HomeBodyState extends State<HomeBody> {
               server.name,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                fontSize: 8,
-              ),
+                    fontSize: 8,
+                  ),
               overflow: TextOverflow.ellipsis,
               maxLines: 1,
               softWrap: true,
@@ -592,7 +643,8 @@ class _HomeBodyState extends State<HomeBody> {
     );
   }
 
-  Column buildFirstPage(ServerModel currentServer, List<Widget> cards, BuildContext context) {
+  Column buildFirstPage(
+      ServerModel currentServer, List<Widget> cards, BuildContext context) {
     return Column(
       children: [
         //Appbar for showing current server name and image
@@ -613,18 +665,20 @@ class _HomeBodyState extends State<HomeBody> {
               padding: const EdgeInsets.all(8),
               itemCount: cards.length,
               scrollDirection: Axis.horizontal,
-              itemBuilder: (context,index) {
+              itemBuilder: (context, index) {
                 return cards[index];
-              }
-          ),
+              }),
         ),
-        Text("Channels",style: Theme.of(context).textTheme.headlineMedium,),
+        Text(
+          "Channels",
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
         Card(
           margin: const EdgeInsets.all(8.0),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: SizedBox(
-              width: MediaQuery.of(context).size.width*0.8,
+              width: MediaQuery.of(context).size.width * 0.8,
               height: 42,
               child: TextField(
                 onChanged: (value) {
@@ -643,25 +697,34 @@ class _HomeBodyState extends State<HomeBody> {
           ),
         ),
         Expanded(
-          child:ListView.separated(
-                  padding: const EdgeInsets.all(8),
-                  itemCount: channels.length,
-                  //add a divider
-                  itemBuilder: (context,index) {
-                    final channel = channels[index];
-                    return ListTile(
-                      contentPadding: const EdgeInsets.symmetric(vertical: 4,horizontal: 16),
-                      onTap: () {
-                        setState(() {
-                          _currentChannel = index;
-                        });
-                        pageController.animateToPage(1, duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
-                      },
-                      leading: const Icon(FontAwesomeIcons.hashtag,size: 16,),
-                      title: Text(channel['name']),
-                    );
-                  }, separatorBuilder: (BuildContext context, int index) { return const Divider(); },
+          child: ListView.separated(
+            padding: const EdgeInsets.all(8),
+            itemCount: channels.length,
+            //add a divider
+            itemBuilder: (context, index) {
+              final channel = channels[index];
+              return ListTile(
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                onTap: () {
+                  setState(() {
+                    _currentChannel = index;
+                  });
+                  pageController.animateToPage(1,
+                      duration: const Duration(milliseconds: 500),
+                      curve: Curves.easeIn);
+                },
+                leading: const Icon(
+                  FontAwesomeIcons.hashtag,
+                  size: 16,
                 ),
+                title: Text(channel['name']),
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return const Divider();
+            },
+          ),
         ),
       ],
     );
@@ -671,7 +734,7 @@ class _HomeBodyState extends State<HomeBody> {
     return Align(
       alignment: Alignment.bottomCenter,
       child: // A scrollable horizontal list
-      Container(
+          Container(
         decoration: BoxDecoration(
           //Top left and right border radius to 20
           borderRadius: const BorderRadius.only(
@@ -688,11 +751,11 @@ class _HomeBodyState extends State<HomeBody> {
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16),
         height: 60,
-        child:ListView.builder(
+        child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: _servers.length,
-          itemBuilder: (context,index) {
-            if(index==0) {
+          itemBuilder: (context, index) {
+            if (index == 0) {
               return Column(
                 children: [
                   Material(
@@ -700,18 +763,22 @@ class _HomeBodyState extends State<HomeBody> {
                     shape: const CircleBorder(),
                     child: IconButton(
                       onPressed: openAddServerDialog,
-                      icon: Icon(FontAwesomeIcons.plus,
-                        color: Theme.of(context).colorScheme.primary,size: 22,),
+                      icon: Icon(
+                        FontAwesomeIcons.plus,
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 22,
+                      ),
                     ),
                   ),
                   const SizedBox(
-                    height:2,
+                    height: 2,
                   ),
                   SizedBox(
                     height: 10,
                     width: 50,
                     child: FittedBox(
-                      child: Text("Add Ghor",
+                      child: Text(
+                        "Add Ghor",
                         style: Theme.of(context).textTheme.bodySmall,
                       ),
                     ),
@@ -719,7 +786,7 @@ class _HomeBodyState extends State<HomeBody> {
                 ],
               );
             }
-            return buildServerWidget(_servers[index],index);
+            return buildServerWidget(_servers[index], index);
           },
         ),
       ),
@@ -731,41 +798,39 @@ class _HomeBodyState extends State<HomeBody> {
     List<Widget> cards = [];
     final firstCard = Card(
         child: SizedBox(
-          height: 100,
-          width: MediaQuery.of(context).size.width*0.8,
-          child: Center(
-            child: ListTile(
-              leading: const Icon(Icons.home_outlined),
-              title: Text(currentServer.name),
-              subtitle: Text(currentServer.description),
-              trailing: IconButton(onPressed: openBottomDialog,  icon:const Icon(Icons.more_vert)),
-            ),
-          ),
-        )
-    );
+      height: 100,
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: Center(
+        child: ListTile(
+          leading: const Icon(Icons.home_outlined),
+          title: Text(currentServer.name),
+          subtitle: Text(currentServer.description),
+          trailing: IconButton(
+              onPressed: openBottomDialog, icon: const Icon(Icons.more_vert)),
+        ),
+      ),
+    ));
     cards.add(firstCard);
     final secondCard = Card(
         child: SizedBox(
-          height: 100,
-          width: MediaQuery.of(context).size.width*0.8,
-          child: Center(
-            child: ListTile(
-              leading: const Icon(FontAwesomeIcons.userGroup),
-              title: Text("${currentServer.members.length} members"),
-              subtitle: Text(
-                  "${currentServer.name} has ${currentServer.members.length} members including you"
-              ),
-            ),
-          ),
-        )
-    );
+      height: 100,
+      width: MediaQuery.of(context).size.width * 0.8,
+      child: Center(
+        child: ListTile(
+          leading: const Icon(FontAwesomeIcons.userGroup),
+          title: Text("${currentServer.members.length} members"),
+          subtitle: Text(
+              "${currentServer.name} has ${currentServer.members.length} members including you"),
+        ),
+      ),
+    ));
     cards.add(secondCard);
     return cards;
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_servers.length<2) {
+    if (_servers.length < 2) {
       return buildServerSelector(context);
     }
     final currentServer = _servers[_currentServer];
@@ -785,10 +850,17 @@ class _HomeBodyState extends State<HomeBody> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(FontAwesomeIcons.hashtag,size: 64,),
-                const SizedBox(height: 16,),
+                const Icon(
+                  FontAwesomeIcons.hashtag,
+                  size: 64,
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
                 const Text("No channels found"),
-                const SizedBox(height: 16,),
+                const SizedBox(
+                  height: 16,
+                ),
                 ElevatedButton(
                   onPressed: openCreateChannelDialog,
                   child: const Text("Create Channel"),
@@ -796,21 +868,24 @@ class _HomeBodyState extends State<HomeBody> {
               ],
             ),
           )
-        else ChatBody(server: _servers[_currentServer], channelRef: channels[_currentChannel],)
+        else
+          ChatBody(
+            server: _servers[_currentServer],
+            channelRef: channels[_currentChannel],
+          )
       ],
     );
   }
 
-  void onState()async {
+  void onState() async {
     final newServers = await getJoinedServers();
-    if (newServers.length>1) {
+    if (newServers.length > 1) {
       final newChannels = await getServerChannels(newServers[_currentServer]);
       setState(() {
         _servers = newServers;
         channels = newChannels;
       });
-    }
-    else {
+    } else {
       setState(() {
         _servers = newServers;
       });
@@ -828,5 +903,4 @@ class _HomeBodyState extends State<HomeBody> {
     pageController.dispose();
     super.dispose();
   }
-
 }

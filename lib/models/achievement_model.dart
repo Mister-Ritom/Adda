@@ -3,18 +3,23 @@ import 'package:flutter/material.dart';
 class Achievement {
   final String title;
   String description;
-  final IconData icon;
+  final String icon;
   final List<Color> colors;
   final Color textColor;
 
-  Achievement({required this.title, required this.description, required this.icon, required this.colors,
-    Color? textColor}):textColor = textColor?? Colors.white;
+  Achievement(
+      {required this.title,
+      required this.description,
+      required this.icon,
+      required this.colors,
+      Color? textColor})
+      : textColor = textColor ?? Colors.white;
 
   Map<String, dynamic> toJson() {
     return {
       'title': title,
       'description': description,
-      'icon': icon.codePoint,
+      'icon': icon,
       'colors': colors.map((color) => color.value).toList(),
       'textColor': textColor.value,
     };
@@ -24,14 +29,11 @@ class Achievement {
     return Achievement(
       title: json['title'],
       description: json['description'],
-      icon: IconData(
-        json['icon'],
-        fontFamily: 'FontAwesomeSolid',
-        fontPackage: 'font_awesome_flutter',
-      ),
-      colors: (json['colors'] as List<dynamic>).map((color) => Color(color)).toList(),
+      icon: json["icon"],
+      colors: (json['colors'] as List<dynamic>)
+          .map((color) => Color(color))
+          .toList(),
       textColor: Color(json['textColor']),
     );
   }
-
 }
