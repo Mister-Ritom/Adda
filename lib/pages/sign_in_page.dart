@@ -158,7 +158,7 @@ class _SignInPageState extends State<SignInPage> {
     List<Achievement> achievements = [];
     final viewsAchievement = Achievement(
       title: "Views",
-      description: "Got {views} views on profile",
+      description: 'Got {views} views on profile',
       icon:
           "https://img.icons8.com/material-outlined/24/visible--v1.png", //From Icons8
       colors: [
@@ -196,31 +196,38 @@ class _SignInPageState extends State<SignInPage> {
   }
 
   Future<void> signInWithGoogle() async {
-    // Trigger the authentication flow
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await GoogleSignIn(
+              clientId:
+                  "932994511784-4scs9e3veq1u0j8ooul6fl63njm1l518.apps.googleusercontent.com")
+          .signIn();
 
-    // Obtain the auth details from the request
-    final GoogleSignInAuthentication? googleAuth =
-        await googleUser?.authentication;
+      // Obtain the auth details from the request
+      final GoogleSignInAuthentication? googleAuth =
+          await googleUser?.authentication;
 
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth?.accessToken,
-      idToken: googleAuth?.idToken,
-    );
-    // Once signed in, return the UserCredential
-    final cred = await FirebaseAuth.instance.signInWithCredential(credential);
-    //check if user id already exists in firestore
-    final userDoc = await FirebaseFirestore.instance
-        .collection('users')
-        .doc(cred.user!.uid)
-        .get();
-    if (!userDoc.exists) {
-      await createUserDoc(cred);
-    }
-    if (context.mounted) {
-      Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomePage()));
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth?.accessToken,
+        idToken: googleAuth?.idToken,
+      );
+      // Once signed in, return the UserCredential
+      final cred = await FirebaseAuth.instance.signInWithCredential(credential);
+      //check if user id already exists in firestore
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(cred.user!.uid)
+          .get();
+      if (!userDoc.exists) {
+        await createUserDoc(cred);
+      }
+      if (context.mounted) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const HomePage()));
+      }
+    } catch (e, stack) {
+      FirebaseCrashlytics.instance.recordError(e, stack);
     }
   }
 
@@ -238,6 +245,129 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      if (constraints.maxWidth < 700) {
+        return buildMobile(context);
+      } else {
+        return buildDesktop(context);
+      }
+    });
+  }
+
+  Widget buildDesktop(BuildContext context) {
+    return Scaffold(
+      //Resize to bottom false
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          const RiveAnimation.asset(
+            "assets/shapes_background.riv",
+            fit: BoxFit.fill,
+          ),
+          BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+            child: Container(
+              decoration: BoxDecoration(color: Colors.white.withOpacity(0.0)),
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                flex: 1,
+                child: Container(
+                  height: MediaQuery.of(context).size.height,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset("assets/Adda.png"),
+                      const Text(
+                        "Adda",
+                        style: TextStyle(
+                            fontSize: 50,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                            wordSpacing: 1.7),
+                      ),
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      const Text(
+                        "Meet your friends around the world.",
+                        style: TextStyle(
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16),
+                      child: currentPage,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        child: buildSignInButton(context),
+                        width: 250,
+                        height: 60,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => togglePage(context),
+                      child: Text(
+                        page == 2
+                            ? "Already a user of Adda? Sign in"
+                            : "Not a user of Adda? Sign up",
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  ElevatedButton buildSignInButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: onSignIn,
+      child: RichText(
+        text: TextSpan(
+          children: [
+            TextSpan(
+              // Check page for sign up or sign in
+              text: page == 2 ? "Sign up with email" : "Sign in with email",
+              style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                  color: Theme.of(context).colorScheme.inverseSurface),
+            ),
+            //Widget span with a sized box of width 10
+            const WidgetSpan(
+              child: SizedBox(
+                width: 10,
+              ),
+            ),
+            WidgetSpan(
+              child: Icon(
+                FontAwesomeIcons.rightToBracket,
+                size: 20,
+                color: Theme.of(context).colorScheme.inverseSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildMobile(BuildContext context) {
     return Scaffold(
       //Resize to bottom false
       resizeToAvoidBottomInset: false,
@@ -293,41 +423,7 @@ class _SignInPageState extends State<SignInPage> {
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width - 120,
                       height: 50,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
-                        onPressed: onSignIn,
-                        child: RichText(
-                            text: TextSpan(children: [
-                          TextSpan(
-                            // Check page for sign up or sign in
-                            text: page == 2
-                                ? "Sign up with email"
-                                : "Sign in with email",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .copyWith(
-                                    color: Theme.of(context)
-                                        .colorScheme
-                                        .inverseSurface),
-                          ),
-                          //Widget span with a sized box of width 10
-                          const WidgetSpan(
-                              child: SizedBox(
-                            width: 10,
-                          )),
-                          WidgetSpan(
-                              child: Icon(
-                            FontAwesomeIcons.rightToBracket,
-                            size: 20,
-                            color: Theme.of(context).colorScheme.inverseSurface,
-                          )),
-                        ])),
-                      ),
+                      child: buildSignInButton(context),
                     ),
                   ),
                 ),
@@ -456,7 +552,7 @@ class _SignInPageState extends State<SignInPage> {
       ),
       margin: const EdgeInsets.only(top: 50, left: 8, right: 8),
       child: Container(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 24),
         height: 360,
         width: MediaQuery.of(context).size.width - 16,
         decoration: BoxDecoration(
