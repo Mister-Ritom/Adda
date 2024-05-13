@@ -611,9 +611,15 @@ class _HomeBodyState extends State<HomeBody> {
                     : const CircleBorder(),
                 child: InkWell(
                   onTap: () {
+                          
                     setState(() {
                       _currentServer = index;
                     });
+                    getServerChannels(_servers[_currentServer]).then((data) =>
+                      setState(() {
+                        channels = data;
+                      })
+                    );
                   },
                   child: CircleAvatar(
                     radius: 21,

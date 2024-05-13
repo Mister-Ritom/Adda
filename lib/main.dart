@@ -87,7 +87,6 @@ class MyApp extends StatelessWidget {
           unselectedItemColor: Colors.grey,
         ),
         textTheme: getTextTheme(Colors.black),
-        useMaterial3: true,
       ),
       darkTheme: ThemeData.dark(useMaterial3: true).copyWith(
           bottomNavigationBarTheme: BottomNavigationBarThemeData(
