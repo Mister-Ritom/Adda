@@ -46,6 +46,7 @@ dependencies:
   intl_phone_field: ^3.2.0
   flutter_profile_picture: ^2.0.0
   image_picker: ^1.0.2
+  url_launcher: ^6.2.6
 
 dev_dependencies:
   flutter_test:

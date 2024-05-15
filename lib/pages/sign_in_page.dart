@@ -4,12 +4,14 @@ import 'package:adda/models/achievement_model.dart';
 import 'package:adda/pages/home_page.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:rive/rive.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../models/user_model.dart';
 
@@ -256,6 +258,17 @@ class _SignInPageState extends State<SignInPage> {
 
   Widget buildDesktop(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text(
+                        "Adda",
+                        style: TextStyle(
+                            fontSize: 50,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.5,
+                            wordSpacing: 1.7),
+                      ),
+        centerTitle: true,
+      ),
       //Resize to bottom false
       resizeToAvoidBottomInset: false,
       body: Stack(
@@ -280,14 +293,6 @@ class _SignInPageState extends State<SignInPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset("assets/Adda.png"),
-                      const Text(
-                        "Adda",
-                        style: TextStyle(
-                            fontSize: 50,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                            wordSpacing: 1.7),
-                      ),
                       const SizedBox(
                         height: 20,
                       ),
@@ -428,31 +433,64 @@ class _SignInPageState extends State<SignInPage> {
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.only(top: 16),
-                child: Text(
-                  // if page is 2 show not a user of adda else show already a user of adda
-                  page == 2 ? "Already a user of Adda?" : "Not a user of Adda?",
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: Colors.grey.shade400,
-                      ),
-                ),
-              ),
 
               Padding(
-                padding: const EdgeInsets.only(top: 2),
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width - 130,
-                  height: 40,
-                  child: TextButton(
-                    onPressed: () => {togglePage(context)},
-                    child: Text(
-                        //If page is 2 show create account or show login
-                        page == 2 ? "Login" : "Create Account",
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyLarge!
-                            .copyWith(color: Colors.blueAccent.shade400)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 16
+                ),
+                child: TextButton(
+                  onPressed: () => {togglePage(context)},
+                  child: Text(
+                      //If page is 2 show create account or show login
+                      page == 2 ? "Already have an account? Login" :
+                       "Don't have an Adda account? Create Account",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodyMedium!
+                          .copyWith(
+                            color: Colors.amber
+                          )
+                          ),
+                ),
+              ),
+              // Text Span with a link to terms and conditions and privacy policy
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: Text.rich(
+                  TextSpan(
+                    text: "By signing in, you agree to our ",
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          color: Colors.grey.shade500,
+                        ),
+                    children: [
+                      TextSpan(
+                        text: "terms and conditions",
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                              color: Colors.blueAccent.shade400,
+                            ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            launchUrl(Uri.parse(
+                                "https://anonscloud.vercel.app/terms"));
+                          },
+                      ),
+                      const TextSpan(
+                        text: " and ",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                      TextSpan(
+                        text: "privacy policy",
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                              color: Colors.blueAccent.shade400,
+                            ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            launchUrl(Uri.parse(
+                                "https://anonscloud.vercel.app/privacy"));
+                          },
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -470,7 +508,7 @@ class _SignInPageState extends State<SignInPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      margin: const EdgeInsets.only(top: 50, left: 8, right: 8),
+      margin: const EdgeInsets.only(top: 25, left: 8, right: 8),
       child: Container(
         padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
         height: 360,
@@ -550,7 +588,7 @@ class _SignInPageState extends State<SignInPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      margin: const EdgeInsets.only(top: 50, left: 8, right: 8),
+      margin: const EdgeInsets.only(top: 25, left: 8, right: 8),
       child: Container(
         padding: const EdgeInsets.only(left: 16, right: 16, top: 24),
         height: 360,
@@ -565,6 +603,8 @@ class _SignInPageState extends State<SignInPage> {
             height: 10,
           ),
           passwordField(context),
+      
+
           Padding(
             padding: const EdgeInsets.only(top: 16, bottom: 16),
             child: Text(
@@ -574,11 +614,9 @@ class _SignInPageState extends State<SignInPage> {
                   ),
             ),
           ),
+
           // A row with three icon buttons
-          Padding(
-            padding: const EdgeInsets.only(top: 70),
-            child: providerRow(),
-          ),
+          providerRow(),
         ]),
       ),
     );
