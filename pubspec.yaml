@@ -33,16 +33,16 @@ dependencies:
 
 
   provider: ^6.0.5
-  google_fonts: ^5.1.0
-  firebase_core: ^2.15.1
-  firebase_analytics: ^10.4.5
-  firebase_auth: ^4.7.3
-  firebase_storage: ^11.2.6
-  firebase_crashlytics: ^3.3.5
-  cloud_firestore: ^4.8.5
-  rive: ^0.11.14
+  google_fonts: ^8.0.0
+  firebase_core: ^4.4.0
+  firebase_analytics: ^12.1.1
+  firebase_auth: ^6.1.4
+  firebase_storage: ^13.0.6
+  firebase_crashlytics: ^5.0.7
+  cloud_firestore: ^6.1.2
+  rive: ^0.14.1
   font_awesome_flutter: ^10.5.0
-  google_sign_in: ^6.1.4
+  google_sign_in: ^7.2.0
   intl_phone_field: ^3.2.0
   flutter_profile_picture: ^2.0.0
   image_picker: ^1.0.2
@@ -57,7 +57,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

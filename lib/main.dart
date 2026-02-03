@@ -9,9 +9,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:rive/rive.dart';
 import 'firebase_options.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +23,7 @@ void main() async {
     FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
     return true;
   };
+  await RiveNative.init();
   runApp(
     ChangeNotifierProvider(
       create: (context) => ThemeProvider(),
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   // This widget is the root of your application.
-  
+
   TextTheme getTextTheme(Color textColor) {
     return TextTheme(
       bodySmall: GoogleFonts.poppins().copyWith(
@@ -72,10 +73,9 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    
     final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       title: 'Adda',
@@ -94,10 +94,9 @@ class MyApp extends StatelessWidget {
             selectedItemColor: Colors.purple.shade100,
             unselectedItemColor: Colors.grey,
           ),
-          textTheme: getTextTheme(Colors.white)
-      ),
+          textTheme: getTextTheme(Colors.white)),
       themeMode: themeProvider.themeMode,
-      home:const MyStatelessWidget(),
+      home: const MyStatelessWidget(),
     );
   }
 }
@@ -107,15 +106,10 @@ class MyStatelessWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-
-    if (FirebaseAuth.instance.currentUser==null) {
+    if (FirebaseAuth.instance.currentUser == null) {
       return const SignInPage();
-    }
-    else {
+    } else {
       return const HomePage();
     }
   }
 }
-
-
-

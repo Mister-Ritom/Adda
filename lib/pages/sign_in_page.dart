@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:adda/models/achievement_model.dart';
 import 'package:adda/pages/home_page.dart';
+import 'package:adda/rive_animation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
@@ -9,8 +10,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:rive/rive.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:rive/rive.dart' hide Animation;
 import 'package:url_launcher/url_launcher.dart';
 
 import '../models/user_model.dart';
@@ -199,34 +200,42 @@ class _SignInPageState extends State<SignInPage> {
 
   Future<void> signInWithGoogle() async {
     try {
-      // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await GoogleSignIn(
-              clientId:
-                  "932994511784-4scs9e3veq1u0j8ooul6fl63njm1l518.apps.googleusercontent.com")
-          .signIn();
+      final googleSignIn = GoogleSignIn.instance;
 
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-
-      // Create a new credential
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+      // Optionally initialize with client IDs if needed:
+      await googleSignIn.initialize(
+        clientId: '<YOUR_IOS_CLIENT_ID_IF_NEEDED>',
+        serverClientId: '<YOUR_WEB_CLIENT_ID_IF_NEEDED>',
       );
-      // Once signed in, return the UserCredential
-      final cred = await FirebaseAuth.instance.signInWithCredential(credential);
-      //check if user id already exists in firestore
+
+      // Trigger interactive sign-in
+      final googleUser = await googleSignIn.authenticate();
+      if (googleUser == null) return; // User cancelled
+
+      // Get auth details
+      final googleAuth = await googleUser.authentication;
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.idToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
-          .doc(cred.user!.uid)
+          .doc(userCredential.user!.uid)
           .get();
+
       if (!userDoc.exists) {
-        await createUserDoc(cred);
+        await createUserDoc(userCredential);
       }
+
       if (context.mounted) {
         Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const HomePage()));
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       }
     } catch (e, stack) {
       FirebaseCrashlytics.instance.recordError(e, stack);
@@ -260,13 +269,13 @@ class _SignInPageState extends State<SignInPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-                        "Adda",
-                        style: TextStyle(
-                            fontSize: 50,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.5,
-                            wordSpacing: 1.7),
-                      ),
+          "Adda",
+          style: TextStyle(
+              fontSize: 50,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.5,
+              wordSpacing: 1.7),
+        ),
         centerTitle: true,
       ),
       //Resize to bottom false
@@ -275,7 +284,7 @@ class _SignInPageState extends State<SignInPage> {
         children: [
           const RiveAnimation.asset(
             "assets/shapes_background.riv",
-            fit: BoxFit.fill,
+            fit: Fit.fill,
           ),
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
@@ -380,7 +389,7 @@ class _SignInPageState extends State<SignInPage> {
         children: [
           const RiveAnimation.asset(
             "assets/shapes_background.riv",
-            fit: BoxFit.fill,
+            fit: Fit.fill,
           ),
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
@@ -435,23 +444,19 @@ class _SignInPageState extends State<SignInPage> {
               ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 16
-                ),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                 child: TextButton(
                   onPressed: () => {togglePage(context)},
                   child: Text(
                       //If page is 2 show create account or show login
-                      page == 2 ? "Already have an account? Login" :
-                       "Don't have an Adda account? Create Account",
+                      page == 2
+                          ? "Already have an account? Login"
+                          : "Don't have an Adda account? Create Account",
                       style: Theme.of(context)
                           .textTheme
                           .bodyMedium!
-                          .copyWith(
-                            color: Colors.amber
-                          )
-                          ),
+                          .copyWith(color: Colors.amber)),
                 ),
               ),
               // Text Span with a link to terms and conditions and privacy policy
@@ -603,7 +608,6 @@ class _SignInPageState extends State<SignInPage> {
             height: 10,
           ),
           passwordField(context),
-      
 
           Padding(
             padding: const EdgeInsets.only(top: 16, bottom: 16),
